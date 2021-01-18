@@ -9,6 +9,7 @@ library(tidyverse)
 library(nycflights13)
 
 ##' example tables
+#' 
 flights
 airlines
 airports
@@ -16,10 +17,11 @@ planes
 weather
 
 #' exercises 13.2
-
+#' 
 #' Imagine you wanted to draw (approximately) the route each plane flies from its 
 #' origin to its destination. What variables would you need? What tables would you
 #' need to combine?
+#' 
 select(
     flights %>%
         filter(!is.na(arr_time)) %>% # flights that actually arrived at the destination
@@ -37,6 +39,7 @@ select(
 )
 
 #' Very cute graphics added to this answer adapted from jrnold.github.io
+#' 
 flights_latlon <-
     select(
         flights %>%
@@ -66,8 +69,10 @@ flights_latlon %>%
     labs(y = "Latitude", x = "Longitude")
 
 #' primary keys 
+#' 
 
 #' testing uniqueness of primary keys
+#' 
 planes %>% 
     count(tailnum) %>% 
     filter(n > 1)
@@ -76,4 +81,30 @@ weather %>%
     count(year, month, day, hour, origin) %>% 
     filter(n > 1)
 #' There maybe erroneous entries in the weather table for 3 Nov 2013 at 1:00AM
+#' 
 
+flights %>% 
+    count(year, month, day, carrier, flight) %>% 
+    filter(n > 1)
+#' Looks like Southwest and United may have reused flight numbers on some days - or some data problem
+#' 
+flights %>% 
+    count(year, month, day, tailnum) %>% 
+    filter(n > 1)
+#' tailnum doesn't work in primary key as planes could fly circuits through the day
+#' 
+
+#' exercises 13.2
+#' 
+#' Add a surrogate key to flights.
+#' 
+flights_keyed <- flights %>%
+    arrange(year, month, day, carrier, flight, sched_dep_time) %>%
+    group_by(year, month, day, carrier, flight) %>%
+    mutate(day_uid = row_number())
+
+flights_keyed
+
+flights_keyed %>%
+    count(year, month, day, carrier, flight, day_uid) %>% 
+    filter(n > 1)

@@ -127,9 +127,11 @@ weather
     ## # … with 26,105 more rows, and 5 more variables: wind_gust <dbl>, precip <dbl>,
     ## #   pressure <dbl>, visib <dbl>, time_hour <dttm>
 
-exercises 13.2 Imagine you wanted to draw (approximately) the route each
-plane flies from its origin to its destination. What variables would you
-need? What tables would you need to combine?
+exercises 13.2
+
+Imagine you wanted to draw (approximately) the route each plane flies
+from its origin to its destination. What variables would you need? What
+tables would you need to combine?
 
 ``` r
 select(
@@ -198,7 +200,9 @@ flights_latlon %>%
 
 ![](wrangle_relational_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-primary keys testing uniqueness of primary keys
+primary keys
+
+testing uniqueness of primary keys
 
 ``` r
 planes %>% 
@@ -224,3 +228,94 @@ weather %>%
 
 There maybe erroneous entries in the weather table for 3 Nov 2013 at
 1:00AM
+
+``` r
+flights %>% 
+    count(year, month, day, carrier, flight) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 24 x 6
+    ##     year month   day carrier flight     n
+    ##    <int> <int> <int> <chr>    <int> <int>
+    ##  1  2013     6     8 WN        2269     2
+    ##  2  2013     6    15 WN        2269     2
+    ##  3  2013     6    22 WN        2269     2
+    ##  4  2013     6    29 WN        2269     2
+    ##  5  2013     7     6 WN        2269     2
+    ##  6  2013     7    13 WN        2269     2
+    ##  7  2013     7    20 WN        2269     2
+    ##  8  2013     7    27 WN        2269     2
+    ##  9  2013     8     3 WN        2269     2
+    ## 10  2013     8    10 WN        2269     2
+    ## # … with 14 more rows
+
+Looks like Southwest and United may have reused flight numbers on some
+days - or some data problem
+
+``` r
+flights %>% 
+    count(year, month, day, tailnum) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 64,928 x 5
+    ##     year month   day tailnum     n
+    ##    <int> <int> <int> <chr>   <int>
+    ##  1  2013     1     1 N0EGMQ      2
+    ##  2  2013     1     1 N11189      2
+    ##  3  2013     1     1 N11536      2
+    ##  4  2013     1     1 N11544      3
+    ##  5  2013     1     1 N11551      2
+    ##  6  2013     1     1 N12540      2
+    ##  7  2013     1     1 N12567      2
+    ##  8  2013     1     1 N13123      2
+    ##  9  2013     1     1 N13538      3
+    ## 10  2013     1     1 N13566      3
+    ## # … with 64,918 more rows
+
+tailnum doesn’t work in primary key as planes could fly circuits through
+the day
+
+exercises 13.2
+
+Add a surrogate key to flights.
+
+``` r
+flights_keyed <- flights %>%
+    arrange(year, month, day, carrier, flight, sched_dep_time) %>%
+    group_by(year, month, day, carrier, flight) %>%
+    mutate(day_uid = row_number())
+
+flights_keyed
+```
+
+    ## # A tibble: 336,776 x 20
+    ## # Groups:   year, month, day, carrier, flight [336,752]
+    ##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+    ##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+    ##  1  2013     1     1     1825           1829        -4     2056           2053
+    ##  2  2013     1     1     1452           1455        -3     1637           1639
+    ##  3  2013     1     1     2015           2005        10     2149           2144
+    ##  4  2013     1     1     1637           1545        52     1858           1819
+    ##  5  2013     1     1     1939           1840        59       29           2151
+    ##  6  2013     1     1     1554           1600        -6     1701           1734
+    ##  7  2013     1     1     1546           1540         6     1753           1748
+    ##  8  2013     1     1     2115           1700       255     2330           1920
+    ##  9  2013     1     1     2023           1945        38     2240           2206
+    ## 10  2013     1     1     2046           2035        11     2144           2213
+    ## # … with 336,766 more rows, and 12 more variables: arr_delay <dbl>,
+    ## #   carrier <chr>, flight <int>, tailnum <chr>, origin <chr>, dest <chr>,
+    ## #   air_time <dbl>, distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dttm>,
+    ## #   day_uid <int>
+
+``` r
+flights_keyed %>%
+    count(year, month, day, carrier, flight, day_uid) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 0 x 7
+    ## # Groups:   year, month, day, carrier, flight [0]
+    ## # … with 7 variables: year <int>, month <int>, day <int>, carrier <chr>,
+    ## #   flight <int>, day_uid <int>, n <int>
