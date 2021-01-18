@@ -1,21 +1,25 @@
-### R4DS Wrangle Section
+#' ---
+#' title: "R4DS Wrangle Section: Relational Data Chapter"
+#' author: "H. David Shea"
+#' date: "18 January 2021"
+#' output: github_document
+#' ---
+#'
 library(tidyverse)
 library(nycflights13)
 
-# relational data
-
-## example tables
+##' example tables
 flights
 airlines
 airports
 planes
 weather
 
-# exercises 13.2
+#' exercises 13.2
 
-# Imagine you wanted to draw (approximately) the route each plane flies from its 
-# origin to its destination. What variables would you need? What tables would you
-# need to combine?
+#' Imagine you wanted to draw (approximately) the route each plane flies from its 
+#' origin to its destination. What variables would you need? What tables would you
+#' need to combine?
 select(
     flights %>%
         filter(!is.na(arr_time)) %>% # flights that actually arrived at the destination
@@ -32,7 +36,7 @@ select(
     dest, dest_lat, dest_lon
 )
 
-# very cute - from jrnold.github.io
+#' Very cute graphics added to this answer adapted from jrnold.github.io
 flights_latlon <-
     select(
         flights %>%
@@ -61,9 +65,9 @@ flights_latlon %>%
     coord_quickmap() +
     labs(y = "Latitude", x = "Longitude")
 
-# keys 
+#' primary keys 
 
-# unique primary
+#' testing uniqueness of primary keys
 planes %>% 
     count(tailnum) %>% 
     filter(n > 1)
@@ -71,5 +75,5 @@ planes %>%
 weather %>% 
     count(year, month, day, hour, origin) %>% 
     filter(n > 1)
-# erroneous entries in weather for 3 Nov 2013 at 1:00AM??
+#' There maybe erroneous entries in the weather table for 3 Nov 2013 at 1:00AM
 
