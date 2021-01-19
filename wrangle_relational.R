@@ -108,3 +108,65 @@ flights_keyed
 flights_keyed %>%
     count(year, month, day, carrier, flight, day_uid) %>% 
     filter(n > 1)
+
+#' 
+#' AddIdentify the keys in the following datasets:
+#' 
+#' 1. Lahman::Batting
+#' 2. babynames::babynames
+#' 3. nasaweather::atmos
+#' 4. fueleconomy::vehicles
+#' 5. ggplot2::diamonds
+#' 
+library(Lahman)
+library(nasaweather)
+
+#' 
+#' Lahman::Batting
+#' PlayerID, yearID, stint - stint identifies the order of appearance for a player who played on multiple teams in a year 
+#' 
+Batting %>%
+    count(playerID, yearID, stint) %>% 
+    filter(n > 1)
+
+#' 
+#' babynames::babynames
+#' year, sex, name - 5 females named Arthur in 1880
+#' 
+babynames::babynames %>%
+    count(year, sex, name) %>% 
+    filter(n > 1)
+
+#' 
+#' nasaweather::atmos
+#' lat, long, year, month
+#' 
+nasaweather::atmos %>%
+    count(lat, long, year, month) %>% 
+    filter(n > 1)
+
+#' 
+#' ggplot2::diamonds
+#' 
+#' options (depth is a function of x, y, and z):
+#' 
+#' carat, cut, color, clarity, depth
+#' 
+#' carat, cut, color, clarity, x, y, z
+#' 
+diamonds %>%
+    count(carat, cut, color, clarity, depth) %>% 
+    filter(n > 1)
+
+diamonds %>%
+    count(carat, cut, color, clarity, x, y, z) %>% 
+    filter(n > 1)
+
+#'
+#' as neither option provides uniqueness - and because it probably makes sense in general - 
+#' there is no primary key in diamonds and - if desired - should probably be created for each 
+#' individual diamond
+#' 
+diamonds %>%
+    mutate(uid = row_number()) %>%
+    select( uid, carat, cut, color, clarity, depth, table, price, x, y, z)

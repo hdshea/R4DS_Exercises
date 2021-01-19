@@ -319,3 +319,129 @@ flights_keyed %>%
     ## # Groups:   year, month, day, carrier, flight [0]
     ## # … with 7 variables: year <int>, month <int>, day <int>, carrier <chr>,
     ## #   flight <int>, day_uid <int>, n <int>
+
+AddIdentify the keys in the following datasets:
+
+1.  Lahman::Batting
+2.  babynames::babynames
+3.  nasaweather::atmos
+4.  fueleconomy::vehicles
+5.  ggplot2::diamonds
+
+``` r
+library(Lahman)
+library(nasaweather)
+```
+
+    ## 
+    ## Attaching package: 'nasaweather'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     storms
+
+Lahman::Batting PlayerID, yearID, stint - stint identifies the order of
+appearance for a player who played on multiple teams in a year
+
+``` r
+Batting %>%
+    count(playerID, yearID, stint) %>% 
+    filter(n > 1)
+```
+
+    ## [1] playerID yearID   stint    n       
+    ## <0 rows> (or 0-length row.names)
+
+babynames::babynames year, sex, name - 5 females named Arthur in 1880
+
+``` r
+babynames::babynames %>%
+    count(year, sex, name) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 0 x 4
+    ## # … with 4 variables: year <dbl>, sex <chr>, name <chr>, n <int>
+
+nasaweather::atmos lat, long, year, month
+
+``` r
+nasaweather::atmos %>%
+    count(lat, long, year, month) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 0 x 5
+    ## # … with 5 variables: lat <dbl>, long <dbl>, year <int>, month <int>, n <int>
+
+ggplot2::diamonds
+
+options (depth is a function of x, y, and z): carat, cut, color,
+clarity, depth carat, cut, color, clarity, x, y, z
+
+``` r
+diamonds %>%
+    count(carat, cut, color, clarity, depth) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 9,143 x 6
+    ##    carat cut       color clarity depth     n
+    ##    <dbl> <ord>     <ord> <ord>   <dbl> <int>
+    ##  1  0.23 Good      F     VS2      63.8     2
+    ##  2  0.23 Good      G     VVS2     63.8     2
+    ##  3  0.23 Very Good D     VVS2     61.3     2
+    ##  4  0.23 Very Good D     VVS2     61.9     2
+    ##  5  0.23 Very Good D     VVS2     62.5     2
+    ##  6  0.23 Very Good D     VVS1     63.3     2
+    ##  7  0.23 Very Good E     VS2      60.8     2
+    ##  8  0.23 Very Good E     VVS2     59.4     2
+    ##  9  0.23 Very Good E     VVS2     60.6     2
+    ## 10  0.23 Very Good E     VVS2     60.9     2
+    ## # … with 9,133 more rows
+
+``` r
+diamonds %>%
+    count(carat, cut, color, clarity, x, y, z) %>% 
+    filter(n > 1)
+```
+
+    ## # A tibble: 682 x 8
+    ##    carat cut       color clarity     x     y     z     n
+    ##    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <dbl> <int>
+    ##  1  0.23 Good      F     VS2      3.93  3.84  2.48     2
+    ##  2  0.23 Good      G     VVS2     3.94  3.9   2.5      2
+    ##  3  0.23 Very Good D     VVS1     3.9   3.93  2.48     2
+    ##  4  0.23 Very Good E     VVS2     3.96  3.99  2.42     2
+    ##  5  0.24 Very Good E     VVS2     3.96  3.99  2.48     2
+    ##  6  0.24 Very Good E     VVS1     3.95  3.99  2.45     2
+    ##  7  0.24 Very Good G     VVS2     4     4.03  2.49     2
+    ##  8  0.24 Ideal     F     VVS1     4     4.03  2.48     2
+    ##  9  0.25 Premium   G     SI2      5.33  5.28  3.12     2
+    ## 10  0.25 Ideal     F     VS1      4.07  4.09  2.52     2
+    ## # … with 672 more rows
+
+as neither option provides uniqueness - and because it probably makes
+sense in general - there is no primary key in diamonds and - if desired
+- should probably be created for each individual diamond
+
+``` r
+diamonds %>%
+    mutate(uid = row_number()) %>%
+    select( uid, carat, cut, color, clarity, depth, table, price, x, y, z)
+```
+
+    ## # A tibble: 53,940 x 11
+    ##      uid carat cut       color clarity depth table price     x     y     z
+    ##    <int> <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+    ##  1     1 0.23  Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+    ##  2     2 0.21  Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+    ##  3     3 0.23  Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+    ##  4     4 0.290 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+    ##  5     5 0.31  Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+    ##  6     6 0.24  Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+    ##  7     7 0.24  Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+    ##  8     8 0.26  Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+    ##  9     9 0.22  Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+    ## 10    10 0.23  Very Good H     VS1      59.4    61   338  4     4.05  2.39
+    ## # … with 53,930 more rows
