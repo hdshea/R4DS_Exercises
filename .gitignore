@@ -3,4 +3,6 @@
 .RData
 .Ruserdata
 rsconnect/
+wrangle_dates_files/
+wrangle_factors_files/
 wrangle_relational_files/
