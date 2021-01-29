@@ -6,3 +6,6 @@ rsconnect/
 wrangle_dates_files/
 wrangle_factors_files/
 wrangle_relational_files/
+model_building_files/
+model_many_files/
+model_simple_files/
