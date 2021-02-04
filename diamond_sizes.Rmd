@@ -1,0 +1,51 @@
+---
+title: "R Markdown Exercises from R4DS"
+author: "H. David Shea"
+date: "4 Feb 2021"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+
+smaller <- diamonds %>% 
+  filter(carat <= 2.5)
+```
+## Diamonds - ggplot
+
+We have data about **`r nrow(diamonds)`** diamonds[^1]. Only *`r nrow(diamonds) - nrow(smaller)`* are larger than 2.5 carats. The distribution of the remainder is shown below:
+
+[^1]: The data set is supplied as an example data set within the ggplot package.
+
+```{r carat_freqplot, echo = FALSE}
+smaller %>% 
+  ggplot(aes(carat)) + 
+  geom_freqpoly(binwidth = 0.01)
+```
+
+Notice in the above plot that there are almost regular spikes. There tend to be higher numbers of diamonds cut at 'human friendly' carat sizes: 1/2 carat, 1 carat, 1 1/2 carat, etc.
+
+## Cars - formatted tables
+
+```{r table_example, echo = FALSE}
+knitr::kable(
+  mtcars[1:5, ], 
+  caption = "Example output from Motor Trend Cars (mtcars) data set."
+)
+```
+
+## Images
+
+------------------------------------------------------------------------
+
+![L'Hotel Rotunda - Paris Years Ago](images/LHotelRotunda.JPG){width="319"}
+
+------------------------------------------------------------------------
+
+## Randon Formatting
+
+> "I thoroughly disapprove of duels. If a man should challenge me, I would take him kindly and forgivingly by the hand and lead him to a quiet place and kill him."
+>
+> --- Mark Twain

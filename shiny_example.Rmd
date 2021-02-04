@@ -1,0 +1,35 @@
+---
+title: "First Shiny Web App"
+author: "H. David Shea"
+date: "4 Feb 2021"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(shiny)
+library(tidyverse)
+```
+
+This R Markdown document is made interactive using Shiny. Unlike the more traditional workflow of creating static reports, you can now create documents that allow your readers to change the assumptions underlying your analysis and see the results immediately.[^1]
+
+[^1]: To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+
+## Inputs and Outputs
+
+You can embed Shiny inputs and outputs in your document. Outputs are automatically updated whenever inputs change. This demonstrates how a standard text output panel can be made interactive by wrapping it in the Shiny `renderText` function. The `textInput` and `numericInput` functions create the input widgets used to drive the output response.
+
+```{r variable_input, echo = FALSE}
+inputPanel(
+    textInput("name", "What is your name?"),
+    
+    numericInput("age", "How old are you?", NA, min = 0, max = 150)
+)
+
+renderText({
+        txt <- str_c(input$name, ", you indicated that you are ", input$age, " years old.")
+        ifelse(is.na(txt), "  ", txt)
+})
+```

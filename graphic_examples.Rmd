@@ -1,0 +1,197 @@
+---
+title: 'R Markdown Exercises from R4DS: Graphics'
+author: "H. David Shea"
+date: "4 Feb 2021"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    comment = "#>", 
+    collapse = TRUE, 
+    message = FALSE,
+    fig.width = 8,
+    fig.asp = ((1 + sqrt(5)) / 2) - 1, # hadley wickam's version of the golden ratio
+    out.width = "70%",
+    fig.align = "center"
+)
+library(tidyverse)
+
+best_in_class <- mpg %>%
+    group_by(class) %>%
+    filter(row_number(desc(hwy)) == 1)
+
+label <- mpg %>%
+    summarise(
+        displ = max(displ),
+        hwy = 48,
+        label = "Trend line clearly shows that increasing engine \nsize is related to decreasing fuel economy."
+    )
+```
+
+## Plot aesthetics
+
+Here we demonstrate methods to improve communication efficacy by using various labeling and annotation options within **ggplot** (including references to options in the **ggplot** extension **ggrepel**).
+
+```{r ggplot_clarity_options, echo = FALSE}
+ggplot(mpg, aes(displ, hwy)) +
+    geom_point(aes(color = class)) +
+    geom_smooth(se = FALSE) +
+    geom_point(size = 3, shape = 1, data = best_in_class) +
+    scale_y_continuous(limits = c(10, 50), breaks = seq(10, 50, by = 5)) +
+    scale_x_continuous(limits = c(1, 7), breaks = seq(1, 7, by = 1)) +
+    ggrepel::geom_label_repel(aes(label = model), data = best_in_class, alpha = 0.5) +
+    geom_text(aes(label = label), data = label, vjust = "top", hjust = "right") +
+    labs(
+        title = "Fuel efficiency generally decreases with engine size",
+        subtitle = "Two seaters (sports cars) are an exception because of their light weight",
+        x = "Engine displacement (L)",
+        y = "Highway fuel economy (mpg)",
+        color = "Car type",
+        caption = "Data from fueleconomy.gov"
+    ) +
+    annotate("text", x = 6, y = 35, label = "paste(italic(R) ^ 2, \" = 0.75\")", parse = TRUE)
+```
+
+Some variable control over axis labels is demonstrated by `scale_x_date()` with breaks set to specific elements from a tibble - in this case `breaks = presidential$start`.
+
+```{r ggplot_scale_variation, echo = FALSE}
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date("Years", breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous(limits = c(34, 44), breaks = seq(34, 44, by = 1)) +
+    labs(
+        title = "United States Presidental Terms",
+        subtitle = str_c(first(presidential$name),"through",last(presidential$name), sep= " "),
+        y = "President Number"
+    )
+ 
+```
+
+Below demonstrates some control over how legends are displayed.  We also control here the layout of the four different plots within the document with setting of various chunk options.
+
+`{r legend_and_display_control, echo = FALSE,
+    fig.asp = 1,
+    fig.align = "default",
+    out.width = "50%",
+    fig.width = 4}`
+
+```{r legend_and_display_control, echo = FALSE, fig.asp = 1, fig.align = "default", out.width = "50%", fig.width = 4}
+base <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class))
+base + theme(legend.position = "left")
+base + theme(legend.position = "top")
+base + theme(legend.position = "bottom")
+base + theme(legend.position = "right") # the default
+```
+
+And, our aesthetically pleasing car plot again with legend control added.
+
+```{r ggplot_clarity_options_plus_legend, echo = FALSE}
+ggplot(mpg, aes(displ, hwy)) +
+    geom_point(aes(color = class)) +
+    geom_smooth(se = FALSE) +
+    geom_point(size = 3, shape = 1, data = best_in_class) +
+    scale_y_continuous(limits = c(10, 50), breaks = seq(10, 50, by = 5)) +
+    scale_x_continuous(limits = c(1, 7), breaks = seq(1, 7, by = 1)) +
+    ggrepel::geom_label_repel(aes(label = model), data = best_in_class, alpha = 0.5) +
+    geom_text(aes(label = label), data = label, vjust = "top", hjust = "right") +
+    labs(
+        title = "Fuel efficiency generally decreases with engine size",
+        subtitle = "Two seaters (sports cars) are an exception because of their light weight",
+        x = "Engine displacement (L)",
+        y = "Highway fuel economy (mpg)",
+        color = "Car type",
+        caption = "Data from fueleconomy.gov"
+    ) +
+    annotate("text", x = 6, y = 35, label = "paste(italic(R) ^ 2, \" = 0.75\")", parse = TRUE) +
+    theme(legend.position = "bottom") +
+    guides(color = guide_legend(nrow = 1, override.aes = list(size = 2)))
+```
+
+For plots that use log scale of underlying variable, it is a better - from a labeling perspective - to use the scale control geoms (e.g., `scale_x_log10()` and `scale_y_log10()`) versus the log adjusted variables (e.g., `aes(log10(carat), log10(price))`).
+
+```{r ggplot_log_dimension_plots, echo = FALSE, fig.asp = 1, fig.align = "default", out.width = "50%", fig.width = 4}
+ggplot(diamonds, aes(log10(carat), log10(price))) +
+  geom_bin2d()
+
+ggplot(diamonds, aes(carat, price)) +
+  geom_bin2d() + 
+  scale_x_log10() + 
+  scale_y_log10()
+```
+
+The latter plot is displayed in the log dimension space, but with the variable name and axis label markings preserved from the underlying data.
+
+This is an _obvious_ aesthetically pleasing addtion to our Presidential Terms plot which demonstrates some color control options.
+
+```{r ggplot_color_control, echo = FALSE}
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, color = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_color_manual(values = c(Republican = "red", Democratic = "blue")) +
+    scale_x_date("Years", breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous(limits = c(34, 44), breaks = seq(34, 44, by = 1)) +
+    labs(
+        title = "United States Presidental Terms",
+        subtitle = str_c(first(presidential$name),"through",last(presidential$name), sep= " "),
+        y = "President Number",
+        color = "Party Affiliation: "
+    ) +
+    theme(legend.position = "bottom")
+```
+
+And this adds in all of the other Presidential Terms plot improvement from question 2 in the 28.4.4 Exercises.
+
+```{r ggplot_exercise_28_4_4_2, echo = FALSE}
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, color = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_color_manual(values = c(Republican = "red", Democratic = "blue")) +
+    scale_x_date("Years", breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous(limits = c(34, 44), breaks = seq(34, 44, by = 1), labels = presidential$name) +
+    labs(
+        title = "United States Presidental Terms",
+        subtitle = str_c(first(presidential$name),"through",last(presidential$name), sep= " "),
+        y = "President",
+        color = "Party Affiliation: "
+    ) +
+    theme(
+        legend.position = "bottom",
+        panel.grid.minor = element_blank(),
+        axis.ticks.y = element_blank()
+  )
+```
+
+The following example shows the control of various aesthetics across sub-plots from similar data.
+
+```{r control_across-plots, echo = FALSE, fig.asp = 1, fig.align = "default", out.width = "50%", fig.width = 4}
+suv <- mpg %>% filter(class == "suv")
+compact <- mpg %>% filter(class == "compact")
+
+x_scale <- scale_x_continuous("Engine Displacement", limits = range(mpg$displ))
+y_scale <- scale_y_continuous("Highway MPG", limits = range(mpg$hwy))
+col_scale <- scale_color_discrete("Drive\nType", limits = unique(mpg$drv))
+
+ggplot(suv, aes(displ, hwy, color = drv)) +
+  geom_point() +
+  x_scale +
+  y_scale +
+  col_scale
+
+ggplot(compact, aes(displ, hwy, color = drv)) +
+  geom_point() +
+  x_scale +
+  y_scale +
+  col_scale
+```

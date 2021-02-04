@@ -13,7 +13,7 @@ library(broom)
 options(na.action = na.warn)
 #+
 
-#' 25.2 gap minder data 
+#' ## 25.2 gap minder data 
 #' 
 #' never lose this:  https://www.youtube.com/watch?v=jbkSRLYSojo
 #' 
@@ -191,4 +191,31 @@ by_country <- gapminder %>%
 by_country %>% 
     ggplot(aes(year, lifeExp, color = country)) +
     geom_line()
+
+#' ## 25.4 list-columns 
+
+#' ### 25.4 Exercises
+#' 
+#' What’s missing in the following data frame? How does quantile() return that 
+#' missing piece? Why isn’t that helpful here?
+#' 
+tmp <- mtcars %>%
+    group_by(cyl) %>%
+    summarise(q = list(quantile(mpg)))
+tmp[[1,2]]
+#' the specific quantile points are returned in the names of the results of quantile, but that
+#' cannot be referenced within the piping framework
+#' 
+
+#' What does this code do? Why might might it be useful?
+#' 
+tmp <- mtcars %>% 
+    group_by(cyl) %>% 
+    summarise_all(list(list))
+tmp[[1,2]]
+tmp[[2,2]]
+#' returns all observations of each variable in the dateset as a list for the grouping
+#' might be useful for map function applications like with the linear modeling in the chapter
+#' 
+
 
